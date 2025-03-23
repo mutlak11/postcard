@@ -31,16 +31,6 @@
             text-align: center;
             margin-bottom: 12px;
         }
-        .form-section input, .form-section select {
-            padding: 6px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            margin: 3px;
-            width: 160px;
-            text-align: right;
-            direction: rtl;
-        }
         .postcard-preview {
             width: 100%;
             max-width: 450px;
@@ -57,14 +47,15 @@
         }
         .postcard-preview .name {
             position: absolute;
-            bottom: 1cm; /* Moved down exactly 2cm */
-            right: 30%; /* Middle-right position */
+            bottom: 1cm;
+            right: 30%;
             transform: translateX(20%);
             font-size: 2vw;
             color: #000000;
             font-family: Arial, sans-serif;
             text-align: right;
             direction: rtl;
+            cursor: grab;
         }
         .download-button {
             margin-top: 12px;
@@ -79,13 +70,9 @@
         .download-button:hover {
             background-color: #0056b3;
         }
-        @media (max-width: 768px) {
-            .postcard-preview {
-                max-width: 100%;
-            }
-            .postcard-preview .name {
-                font-size: 3vw;
-            }
+        .controls {
+            margin-top: 12px;
+            text-align: center;
         }
     </style>
 </head>
@@ -104,7 +91,12 @@
 
         <div class="postcard-preview" id="postcardPreview">
             <img id="postcardImage" src="imges/mtcard1.jpg" alt="Postcard Preview">
-            <div id="postcardName" class="name">أدخل اسمك</div>
+            <div id="postcardName" class="name" draggable="true">أدخل اسمك</div>
+        </div>
+
+        <div class="controls">
+            <label>حجم الخط:</label>
+            <input type="range" id="fontSize" min="10" max="50" value="20" oninput="adjustFontSize()">
         </div>
 
         <button class="download-button" onclick="downloadPostcard()">تحميل البطاقة البريدية</button>
@@ -120,48 +112,32 @@
             document.getElementById('postcardName').innerText = userName;
         }
 
-        function downloadPostcard() {
-            const postcard = document.getElementById('postcardPreview');
-            const postcardImage = document.getElementById('postcardImage');
-            const postcardName = document.getElementById('postcardName');
-
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-
-            const scaleFactor = 4;
-            canvas.width = postcard.offsetWidth * scaleFactor;
-            canvas.height = postcard.offsetHeight * scaleFactor;
-
-            const img = new Image();
-            img.src = postcardImage.src;
-            img.crossOrigin = "anonymous";
-            img.onload = () => {
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                const baseFontSize = parseFloat(window.getComputedStyle(postcardName).fontSize);
-                const scaledFontSize = baseFontSize * scaleFactor;
-
-                ctx.font = `${scaledFontSize}px ${postcardName.style.fontFamily}`;
-                ctx.fillStyle = postcardName.style.color;
-                ctx.textAlign = 'right';
-                ctx.textBaseline = 'bottom';
-
-                const textX = canvas.width * 0.80; // More to the right
-                const textY = canvas.height - (2 * scaleFactor * 10); // Moved down 2cm
-
-                ctx.fillText(postcardName.innerText, textX, textY);
-
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                const link = document.createElement('a');
-                link.download = 'postcard.jpg';
-                link.href = dataUrl;
-                link.click();
-            };
-
-            img.onerror = () => {
-                console.error('Failed to load the postcard image.');
-            };
+        function adjustFontSize() {
+            const fontSize = document.getElementById('fontSize').value;
+            document.getElementById('postcardName').style.fontSize = fontSize + 'px';
         }
+
+        // Dragging functionality
+        let textElement = document.getElementById("postcardName");
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        textElement.addEventListener("mousedown", function (e) {
+            isDragging = true;
+            offsetX = e.clientX - textElement.getBoundingClientRect().left;
+            offsetY = e.clientY - textElement.getBoundingClientRect().top;
+        });
+
+        document.addEventListener("mousemove", function (e) {
+            if (isDragging) {
+                textElement.style.left = (e.clientX - offsetX) + "px";
+                textElement.style.top = (e.clientY - offsetY) + "px";
+            }
+        });
+
+        document.addEventListener("mouseup", function () {
+            isDragging = false;
+        });
     </script>
 </body>
 </html>

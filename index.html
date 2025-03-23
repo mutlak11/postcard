@@ -135,6 +135,50 @@
             isDragging = false;
             textElement.style.cursor = "grab";
         });
+
+        // ✅ Fix Download Issue
+        function downloadPostcard() {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            const postcard = document.getElementById("postcardPreview");
+            const postcardImage = document.getElementById("postcardImage");
+            const postcardName = document.getElementById("postcardName");
+
+            const scaleFactor = 2;
+            canvas.width = postcard.offsetWidth * scaleFactor;
+            canvas.height = postcard.offsetHeight * scaleFactor;
+
+            const img = new Image();
+            img.src = postcardImage.src;
+            img.crossOrigin = "anonymous";
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                // Get computed font size and transform position
+                const computedStyle = window.getComputedStyle(postcardName);
+                const fontSize = parseFloat(computedStyle.fontSize) * scaleFactor;
+
+                ctx.font = `${fontSize}px ${computedStyle.fontFamily}`;
+                ctx.fillStyle = postcardName.style.color;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+
+                // Calculate correct position
+                const rect = postcard.getBoundingClientRect();
+                const nameRect = postcardName.getBoundingClientRect();
+                const textX = ((nameRect.left + nameRect.width / 2) - rect.left) * scaleFactor;
+                const textY = ((nameRect.top + nameRect.height / 2) - rect.top) * scaleFactor;
+
+                ctx.fillText(postcardName.innerText, textX, textY);
+
+                const dataUrl = canvas.toDataURL("image/png");
+                const link = document.createElement("a");
+                link.download = "postcard.png";
+                link.href = dataUrl;
+                link.click();
+            };
+        }
     </script>
 </body>
 </html>

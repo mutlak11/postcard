@@ -7,8 +7,6 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -26,11 +24,6 @@
             width: 100%;
             max-width: 600px;
         }
-        .form-section {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 12px;
-        }
         .postcard-preview {
             width: 100%;
             max-width: 450px;
@@ -39,6 +32,8 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             overflow: hidden;
+            background-size: cover;
+            background-position: center;
         }
         .postcard-preview img {
             width: 100%;
@@ -47,15 +42,16 @@
         }
         .postcard-preview .name {
             position: absolute;
-            bottom: 1cm;
-            right: 30%;
-            transform: translateX(20%);
-            font-size: 2vw;
-            color: #000000;
+            bottom: 2cm;
+            right: 50%;
+            transform: translateX(50%);
+            font-size: 24px;
+            color: black;
             font-family: Arial, sans-serif;
-            text-align: right;
-            direction: rtl;
+            text-align: center;
             cursor: grab;
+            user-select: none;
+            touch-action: none;
         }
         .download-button {
             margin-top: 12px;
@@ -66,9 +62,6 @@
             border: none;
             border-radius: 3px;
             cursor: pointer;
-        }
-        .download-button:hover {
-            background-color: #0056b3;
         }
         .controls {
             margin-top: 12px;
@@ -91,12 +84,12 @@
 
         <div class="postcard-preview" id="postcardPreview">
             <img id="postcardImage" src="imges/mtcard1.jpg" alt="Postcard Preview">
-            <div id="postcardName" class="name" draggable="true">أدخل اسمك</div>
+            <div id="postcardName" class="name" draggable="false">أدخل اسمك</div>
         </div>
 
         <div class="controls">
             <label>حجم الخط:</label>
-            <input type="range" id="fontSize" min="10" max="50" value="20" oninput="adjustFontSize()">
+            <input type="range" id="fontSize" min="10" max="50" value="24" oninput="adjustFontSize()">
         </div>
 
         <button class="download-button" onclick="downloadPostcard()">تحميل البطاقة البريدية</button>
@@ -120,23 +113,27 @@
         // Dragging functionality
         let textElement = document.getElementById("postcardName");
         let isDragging = false;
-        let offsetX, offsetY;
+        let startX, startY, currentX = 0, currentY = 0;
 
-        textElement.addEventListener("mousedown", function (e) {
+        textElement.addEventListener("pointerdown", function (e) {
             isDragging = true;
-            offsetX = e.clientX - textElement.getBoundingClientRect().left;
-            offsetY = e.clientY - textElement.getBoundingClientRect().top;
+            startX = e.clientX - currentX;
+            startY = e.clientY - currentY;
+            textElement.style.cursor = "grabbing";
         });
 
-        document.addEventListener("mousemove", function (e) {
+        document.addEventListener("pointermove", function (e) {
             if (isDragging) {
-                textElement.style.left = (e.clientX - offsetX) + "px";
-                textElement.style.top = (e.clientY - offsetY) + "px";
+                currentX = e.clientX - startX;
+                currentY = e.clientY - startY;
+
+                textElement.style.transform = `translate(${currentX}px, ${currentY}px)`;
             }
         });
 
-        document.addEventListener("mouseup", function () {
+        document.addEventListener("pointerup", function () {
             isDragging = false;
+            textElement.style.cursor = "grab";
         });
     </script>
 </body>

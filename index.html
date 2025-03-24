@@ -24,6 +24,20 @@
             width: 100%;
             max-width: 600px;
         }
+        .form-section {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .form-section input, .form-section select {
+            width: 80%;
+            max-width: 300px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 5px;
+        }
         .postcard-preview {
             width: 100%;
             max-width: 450px;
@@ -134,46 +148,6 @@
             isDragging = false;
             textElement.style.cursor = "grab";
         });
-
-        function downloadPostcard() {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-
-            const postcard = document.getElementById("postcardPreview");
-            const postcardImage = document.getElementById("postcardImage");
-
-            canvas.width = postcard.offsetWidth * 2;
-            canvas.height = postcard.offsetHeight * 2;
-
-            const img = new Image();
-            img.src = postcardImage.src;
-            img.crossOrigin = "anonymous";
-            img.onload = () => {
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                const computedStyle = window.getComputedStyle(textElement);
-                const fontSize = parseFloat(computedStyle.fontSize) * 2;
-
-                ctx.font = `${fontSize}px ${computedStyle.fontFamily}`;
-                ctx.fillStyle = textElement.style.color;
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-
-                const rect = postcard.getBoundingClientRect();
-                const nameRect = textElement.getBoundingClientRect();
-
-                const textX = ((nameRect.left + nameRect.width / 2) - rect.left) * 2;
-                const textY = ((nameRect.top + nameRect.height / 2) - rect.top) * 2;
-
-                ctx.fillText(textElement.innerText, textX, textY);
-
-                const dataUrl = canvas.toDataURL("image/png");
-                const link = document.createElement("a");
-                link.download = "postcard.png";
-                link.href = dataUrl;
-                link.click();
-            };
-        }
     </script>
 </body>
 </html>

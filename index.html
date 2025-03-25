@@ -128,6 +128,13 @@
             textElement.innerText = userName || "أدخل اسمك";
         }
 
+function updatePostcard() {
+    const imgElement = document.getElementById('postcardImage');
+    imgElement.onerror = () => {
+        console.error("Missing image:", imgElement.src);
+        alert("Image not found! Check filename: " + imgElement.src);
+    };
+        
         function adjustFontSize() {
             const fontSize = document.getElementById('fontSize').value;
             textElement.style.fontSize = fontSize + 'px';

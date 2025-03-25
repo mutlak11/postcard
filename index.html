@@ -142,20 +142,21 @@
             const fontSize = document.getElementById('fontSize').value;
             textElement.style.fontSize = fontSize + 'px';
         }
-   function downloadPostcard() {
+        function downloadPostcard() {
             const preview = document.getElementById('postcardPreview');
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
-            // Get device pixel ratio for crisp text
+            // Get device pixel ratio
             const ratio = window.devicePixelRatio || 1;
             
-            // Set canvas dimensions accounting for DPI
+            // Set canvas dimensions
             canvas.width = preview.offsetWidth * ratio;
             canvas.height = preview.offsetHeight * ratio;
             canvas.style.width = preview.offsetWidth + 'px';
             canvas.style.height = preview.offsetHeight + 'px';
- // Scale context for proper rendering
+            
+            // Scale context
             ctx.scale(ratio, ratio);
 
             const img = new Image();
@@ -169,20 +170,21 @@
                 // Get exact font size from preview
                 const computedStyle = window.getComputedStyle(textElement);
                 const fontSize = parseFloat(computedStyle.fontSize);
-                  // Set font properties to match preview
-                ctx.font = `${fontSize}px Arial`;
+                
+                // Set font properties with exact size
+                ctx.font = `${fontSize * ratio}px Arial`; // Key fix here
                 ctx.fillStyle = computedStyle.color;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
 
-                // Calculate exact position matching preview
+                // Calculate exact position
                 const previewRect = preview.getBoundingClientRect();
                 const textRect = textElement.getBoundingClientRect();
-                           // Get position relative to preview
+                
                 const xPosition = (textRect.left - previewRect.left) + textRect.width/2;
                 const yPosition = (textRect.top - previewRect.top);
 
-                // Draw text at exact position
+                // Draw text
                 ctx.fillText(
                     textElement.innerText,
                     xPosition,
@@ -190,14 +192,16 @@
                 );
 
                 // Trigger download
-                     const link = document.createElement('a');
+                const link = document.createElement('a');
                 link.download = `postcard-${Date.now()}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             };
         }
+  
         
-       
+        
+  
         // Drag functionality
         textElement.addEventListener("pointerdown", (e) => {
             isDragging = true;

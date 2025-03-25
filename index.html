@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=2.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Postcard Generator</title>
     <style>
         body {
@@ -85,21 +85,14 @@
     </style>
 </head>
 <body>
-
     <div class="container">
         <div class="form-section">
             <input type="text" id="userName" placeholder="أدخل اسمك" oninput="updatePostcard()">
-            <select id="templateSelect" onchange="updatePostcard()">
-                <option>قالب 1</option>
-                <option>قالب 2</option>
-                <option>قالب 3</option>
-                <option>قالب 4</option>
-                <option>قالب 5</option>
-            </select>
+            <select id="templateSelect" onchange="updatePostcard()"></select>
         </div>
 
         <div class="postcard-preview" id="postcardPreview">
-            <img id="postcardImage" src="imges/mtcard1.jpg" alt="Postcard Preview">
+            <img id="postcardImage" src="images/mtcard1.jpg" alt="Postcard Preview">
             <div id="postcardName" class="name">أدخل اسمك</div>
         </div>
 
@@ -112,14 +105,23 @@
     </div>
 
     <script>
+        // Generate template options
+        const templateSelect = document.getElementById('templateSelect');
+        for (let i = 1; i <= 16; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = `قالب ${i}`;
+            templateSelect.appendChild(option);
+        }
+
         let textElement = document.getElementById("postcardName");
         let isDragging = false;
         let startX, startY, offsetX = 0, offsetY = 0;
 
         function updatePostcard() {
             const userName = document.getElementById('userName').value;
-            const templateIndex = document.getElementById('templateSelect').selectedIndex;
-            const imageSrc = `imges/mtcard${templateIndex + 1}.jpg`;
+            const templateNumber = document.getElementById('templateSelect').value;
+            const imageSrc = `images/mtcard${templateNumber}.jpg`;
 
             document.getElementById('postcardImage').src = imageSrc;
             textElement.innerText = userName || "أدخل اسمك";
@@ -149,6 +151,9 @@
             isDragging = false;
             textElement.style.cursor = "grab";
         });
+
+        // Initial update
+        updatePostcard();
     </script>
 </body>
 </html>

@@ -54,10 +54,10 @@
             height: auto;
             display: block;
         }
-         .postcard-preview .name {
+        .postcard-preview .name {
             position: absolute;
-            bottom: 3cm; /* 1cm down from original 2cm */
-            right: calc(50% - 1cm); /* 1cm to the right of center */
+            bottom: 3cm;
+            right: calc(50% - 1cm);
             font-size: 24px;
             color: black;
             font-family: Arial, sans-serif;
@@ -66,9 +66,8 @@
             user-select: none;
             touch-action: none;
             white-space: nowrap;
-            transform: translate(50%, 0%); /* Maintain centering adjustment */
+            transform: translate(50%, 0%);
         }
-  
         .download-button {
             margin-top: 12px;
             padding: 8px 16px;
@@ -106,24 +105,14 @@
     </div>
 
     <script>
-        // Generate 16 template options
-             // Initialize offsets for 1cm right/down (approx 38px)
+        // Initialize variables
         let offsetX = 38;
         let offsetY = 38;
+        const textElement = document.getElementById("postcardName");
+        let isDragging = false;
+        let startX, startY;
 
-        // Apply initial position
-        textElement.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-
-        // Modified download function to match new positioning
-        function downloadPostcard() {
-            // ... (other download code) ...
-            ctx.fillText(
-                textElement.innerText,
-                (canvas.width/2) + offsetX,
-                (canvas.height - 80) + offsetY
-            );
-        }
-        
+        // Generate template options
         const templateSelect = document.getElementById('templateSelect');
         for (let i = 1; i <= 16; i++) {
             const option = document.createElement('option');
@@ -132,27 +121,23 @@
             templateSelect.appendChild(option);
         }
 
-        let textElement = document.getElementById("postcardName");
-        let isDragging = false;
-        let startX, startY, offsetX = 0, offsetY = 0;
+        // Set initial position
+        textElement.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
 
         function updatePostcard() {
             const userName = document.getElementById('userName').value;
-            const templateNumber = document.getElementById('templateSelect').value;
-            const imageSrc = `images/mtcard${templateNumber}.jpg`;
-            
+            const templateNumber = templateSelect.value;
             const imgElement = document.getElementById('postcardImage');
-            imgElement.src = imageSrc;
+            
+            imgElement.src = `images/mtcard${templateNumber}.jpg`;
             textElement.innerText = userName || "أدخل اسمك";
+            
+            imgElement.onerror = () => {
+                console.error("Missing image:", imgElement.src);
+                alert("Image not found! Check filename: " + imgElement.src);
+            };
         }
 
-function updatePostcard() {
-    const imgElement = document.getElementById('postcardImage');
-    imgElement.onerror = () => {
-        console.error("Missing image:", imgElement.src);
-        alert("Image not found! Check filename: " + imgElement.src);
-    };
-        
         function adjustFontSize() {
             const fontSize = document.getElementById('fontSize').value;
             textElement.style.fontSize = fontSize + 'px';
@@ -163,29 +148,24 @@ function updatePostcard() {
             const preview = document.getElementById('postcardPreview');
             const ctx = canvas.getContext('2d');
             
-            // Set canvas dimensions
             canvas.width = preview.offsetWidth;
             canvas.height = preview.offsetHeight;
             
-            // Draw background image
             const img = new Image();
             img.crossOrigin = "anonymous";
             img.src = document.getElementById('postcardImage').src;
             
             img.onload = () => {
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                // Draw text
                 ctx.font = `${textElement.style.fontSize} Arial`;
                 ctx.fillStyle = 'black';
                 ctx.textAlign = 'center';
                 ctx.fillText(
                     textElement.innerText,
-                    canvas.width/2 + offsetX,
-                    canvas.height - 80 + offsetY
+                    (canvas.width/2) + offsetX,
+                    (canvas.height - 80) + offsetY
                 );
                 
-                // Trigger download
                 const link = document.createElement('a');
                 link.download = `postcard-${Date.now()}.png`;
                 link.href = canvas.toDataURL('image/png');
@@ -213,12 +193,6 @@ function updatePostcard() {
             isDragging = false;
             textElement.style.cursor = "grab";
         });
-
-        // Error handling for images
-        document.getElementById('postcardImage').onerror = function() {
-            console.error("Image failed to load:", this.src);
-            alert("حدث خطأ في تحميل الصورة. يرجى التحقق من اسم الملف!");
-        };
 
         // Initial setup
         updatePostcard();

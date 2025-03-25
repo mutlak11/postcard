@@ -92,7 +92,7 @@
         </div>
 
         <div class="postcard-preview" id="postcardPreview">
-            <img id="postcardImage" src="images/mtcard1.jpg" alt="Postcard Preview">
+            <img id="postcardImage" src="images/mtcard1.jpg" alt="Postcard Preview" crossorigin="anonymous">
             <div id="postcardName" class="name">أدخل اسمك</div>
         </div>
 
@@ -105,7 +105,7 @@
     </div>
 
     <script>
-        // Generate template options
+        // Generate 16 template options
         const templateSelect = document.getElementById('templateSelect');
         for (let i = 1; i <= 16; i++) {
             const option = document.createElement('option');
@@ -122,8 +122,9 @@
             const userName = document.getElementById('userName').value;
             const templateNumber = document.getElementById('templateSelect').value;
             const imageSrc = `images/mtcard${templateNumber}.jpg`;
-
-            document.getElementById('postcardImage').src = imageSrc;
+            
+            const imgElement = document.getElementById('postcardImage');
+            imgElement.src = imageSrc;
             textElement.innerText = userName || "أدخل اسمك";
         }
 
@@ -132,14 +133,50 @@
             textElement.style.fontSize = fontSize + 'px';
         }
 
-        textElement.addEventListener("pointerdown", function (e) {
+        function downloadPostcard() {
+            const canvas = document.createElement('canvas');
+            const preview = document.getElementById('postcardPreview');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas dimensions
+            canvas.width = preview.offsetWidth;
+            canvas.height = preview.offsetHeight;
+            
+            // Draw background image
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = document.getElementById('postcardImage').src;
+            
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                // Draw text
+                ctx.font = `${textElement.style.fontSize} Arial`;
+                ctx.fillStyle = 'black';
+                ctx.textAlign = 'center';
+                ctx.fillText(
+                    textElement.innerText,
+                    canvas.width/2 + offsetX,
+                    canvas.height - 80 + offsetY
+                );
+                
+                // Trigger download
+                const link = document.createElement('a');
+                link.download = `postcard-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+        }
+
+        // Drag functionality
+        textElement.addEventListener("pointerdown", (e) => {
             isDragging = true;
             startX = e.clientX - offsetX;
             startY = e.clientY - offsetY;
             textElement.style.cursor = "grabbing";
         });
 
-        document.addEventListener("pointermove", function (e) {
+        document.addEventListener("pointermove", (e) => {
             if (isDragging) {
                 offsetX = e.clientX - startX;
                 offsetY = e.clientY - startY;
@@ -147,12 +184,18 @@
             }
         });
 
-        document.addEventListener("pointerup", function () {
+        document.addEventListener("pointerup", () => {
             isDragging = false;
             textElement.style.cursor = "grab";
         });
 
-        // Initial update
+        // Error handling for images
+        document.getElementById('postcardImage').onerror = function() {
+            console.error("Image failed to load:", this.src);
+            alert("حدث خطأ في تحميل الصورة. يرجى التحقق من اسم الملف!");
+        };
+
+        // Initial setup
         updatePostcard();
     </script>
 </body>

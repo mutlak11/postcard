@@ -179,9 +179,7 @@
                 ctx.textBaseline = 'top';
 
                 // Calculate exact position
-                const previewRect = preview.getBoundingClientRect();
-                const textRect = textElement.getBoundingClientRect();
-                
+                       
                 const xPosition = (textRect.left - previewRect.left) + textRect.width/2;
                 const yPosition = (textRect.top - previewRect.top);
 

@@ -15,39 +15,38 @@
             background-color: #f9f9f9;
             direction: rtl;
             text-align: right;
+            margin: 0;
         }
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 12px;
+            padding: 20px;
             width: 100%;
             max-width: 600px;
         }
         .form-section {
             width: 100%;
             text-align: center;
-            margin-bottom: 12px;
+            margin-bottom: 20px;
         }
         .form-section input, .form-section select {
             width: 80%;
             max-width: 300px;
-            padding: 10px;
+            padding: 12px;
             font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin: 5px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin: 10px 0;
         }
         .postcard-preview {
             width: 100%;
             max-width: 450px;
-            text-align: center;
             position: relative;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
             overflow: hidden;
-            background-size: cover;
-            background-position: center;
+            background: white;
         }
         .postcard-preview img {
             width: 100%;
@@ -56,31 +55,42 @@
         }
         .postcard-preview .name {
             position: absolute;
-            bottom: 1.5cm;
-            right: calc(50% - 1cm);
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
             font-size: 24px;
-            color: black;
-            font-family: Arial, sans-serif;
+            color: #000;
+            font-weight: bold;
             text-align: center;
-            cursor: grab;
+            cursor: move;
             user-select: none;
             touch-action: none;
             white-space: nowrap;
-            transform: translate(50%, 0%);
+            z-index: 2;
         }
         .download-button {
-            margin-top: 12px;
-            padding: 8px 16px;
-            font-size: 14px;
+            margin-top: 20px;
+            padding: 12px 24px;
+            font-size: 16px;
             background-color: #007BFF;
             color: white;
             border: none;
-            border-radius: 3px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: background 0.3s;
+        }
+        .download-button:hover {
+            background-color: #0056b3;
         }
         .controls {
-            margin-top: 12px;
+            margin-top: 20px;
             text-align: center;
+        }
+        @media (max-width: 480px) {
+            .postcard-preview .name {
+                font-size: 20px;
+                bottom: 30px;
+            }
         }
     </style>
 </head>
@@ -105,15 +115,14 @@
     </div>
 
     <script>
-        // Initialize variables
-        let offsetX = 38;
-        let offsetY = 38;
-        const textElement = document.getElementById("postcardName");
+        // Initialize elements
+        const templateSelect = document.getElementById('templateSelect');
+        const textElement = document.getElementById('postcardName');
+        let offsetX = 0, offsetY = 0;
         let isDragging = false;
         let startX, startY;
 
         // Generate template options
-        const templateSelect = document.getElementById('templateSelect');
         for (let i = 1; i <= 16; i++) {
             const option = document.createElement('option');
             option.value = i;
@@ -121,42 +130,35 @@
             templateSelect.appendChild(option);
         }
 
-        // Set initial position
-        textElement.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-
+        // Update postcard preview
         function updatePostcard() {
             const userName = document.getElementById('userName').value;
             const templateNumber = templateSelect.value;
             const imgElement = document.getElementById('postcardImage');
             
             imgElement.src = `images/mtcard${templateNumber}.jpg`;
-            textElement.innerText = userName || "أدخل اسمك";
+            textElement.textContent = userName || "أدخل اسمك";
             
             imgElement.onerror = () => {
-                console.error("Missing image:", imgElement.src);
-                alert("Image not found! Check filename: " + imgElement.src);
+                console.error("Image not found:", imgElement.src);
+                alert("القالب غير موجود! الرجاء التحقق من الملفات.");
             };
         }
 
+        // Adjust font size
         function adjustFontSize() {
-            const fontSize = document.getElementById('fontSize').value;
-            textElement.style.fontSize = fontSize + 'px';
+            textElement.style.fontSize = document.getElementById('fontSize').value + 'px';
         }
+
+        // Download functionality
         function downloadPostcard() {
             const preview = document.getElementById('postcardPreview');
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            
-            // Get device pixel ratio
             const ratio = window.devicePixelRatio || 1;
             
-            // Set canvas dimensions
             canvas.width = preview.offsetWidth * ratio;
             canvas.height = preview.offsetHeight * ratio;
-            canvas.style.width = preview.offsetWidth + 'px';
-            canvas.style.height = preview.offsetHeight + 'px';
-            
-            // Scale context
             ctx.scale(ratio, ratio);
 
             const img = new Image();
@@ -164,104 +166,62 @@
             img.src = document.getElementById('postcardImage').src;
 
             img.onload = () => {
-                // Draw background image
                 ctx.drawImage(img, 0, 0, preview.offsetWidth, preview.offsetHeight);
                 
-                // Get exact font size from preview
-                const computedStyle = window.getComputedStyle(textElement);
-                const fontSize = parseFloat(computedStyle.fontSize);
-                
-                // Set font properties with exact size
-               
-                ctx.font = `${fontSize * ratio}px Arial`;  // Multiply by device ratio
-                ctx.fillStyle = computedStyle.color;
+                const style = window.getComputedStyle(textElement);
+                ctx.font = `${parseFloat(style.fontSize) * ratio}px Arial`;
+                ctx.fillStyle = style.color;
                 ctx.textAlign = 'center';
-                ctx.textBaseline = 'top';
-
-                // Calculate exact position
-                       
-                const xPosition = (textRect.left - previewRect.left) + textRect.width/2;
-                const yPosition = (textRect.top - previewRect.top);
-
- 
-            const previewRect = preview.getBoundingClientRect();
-           const textRect = textElement.getBoundingClientRect();
-
-            ctx.fillText(
-                textElement.innerText,
-                (textRect.left - previewRect.left) + textRect.width/2,  // X
-                (textRect.top - previewRect.top)                        // Y
-            );
                 
-                // Trigger download
+                const previewRect = preview.getBoundingClientRect();
+                const textRect = textElement.getBoundingClientRect();
+                
+                ctx.fillText(
+                    textElement.textContent,
+                    (textRect.left - previewRect.left) + textRect.width/2,
+                    (textRect.top - previewRect.top) + textRect.height/2
+                );
+
                 const link = document.createElement('a');
                 link.download = `postcard-${Date.now()}.png`;
-                link.href = canvas.toDataURL('image/png');
+                link.href = canvas.toDataURL();
                 link.click();
             };
         }
-  
- // TOUCH EVENTS
-textElement.addEventListener("touchstart", handleDragStart);
-textElement.addEventListener("touchmove", handleDragMove);
-textElement.addEventListener("touchend", handleDragEnd);
 
-// MOUSE EVENTS
-textElement.addEventListener("mousedown", handleDragStart);
-document.addEventListener("mousemove", handleDragMove);
-document.addEventListener("mouseup", handleDragEnd);
-
-// Unified handlers
-function handleDragStart(e) {
-    isDragging = true;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    startX = clientX - offsetX;
-    startY = clientY - offsetY;
-}
-
-function handleDragMove(e) {
-    if (!isDragging) return;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    offsetX = clientX - startX;
-    offsetY = clientY - startY;
-    textElement.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-}
-
-function handleDragEnd() {
-    isDragging = false;
-}       
-        
-  
         // Drag functionality
-        textElement.addEventListener("pointerdown", (e) => {
+        function handleStart(e) {
             isDragging = true;
-            startX = e.clientX - offsetX;
-            startY = e.clientY - offsetY;
-            textElement.style.cursor = "grabbing";
-        });
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            startX = clientX - offsetX;
+            startY = clientY - offsetY;
+            textElement.style.cursor = 'grabbing';
+        }
 
-        document.addEventListener("pointermove", (e) => {
-            if (isDragging) {
-                offsetX = e.clientX - startX;
-                offsetY = e.clientY - startY;
-                textElement.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-            }
-        });
+        function handleMove(e) {
+            if (!isDragging) return;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            offsetX = clientX - startX;
+            offsetY = clientY - startY;
+            textElement.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        }
 
-        document.addEventListener("pointerup", () => {
+        function handleEnd() {
             isDragging = false;
-            textElement.style.cursor = "grab";
-        });
+            textElement.style.cursor = 'grab';
+        }
 
-@media (max-width: 768px) {
-    .postcard-preview .name {
-        font-size: 6vw;     /* Responsive font size */
-        bottom: 5vh;        /* Responsive position */
-    }
-}
-        
+        // Event listeners
+        textElement.addEventListener('mousedown', handleStart);
+        textElement.addEventListener('touchstart', handleStart);
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('touchmove', handleMove);
+        document.addEventListener('mouseup', handleEnd);
+        document.addEventListener('touchend', handleEnd);
+
         // Initial setup
         updatePostcard();
     </script>

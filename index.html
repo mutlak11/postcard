@@ -107,11 +107,16 @@
 </head>
 <body>
     <div class="container">
+   
+        <div class="preview-title">عنوان البطاقة</div>
+    
+    </div>
         <div class="form-section">
             <input type="text" id="userName" placeholder="أدخل اسمك" oninput="updatePostcard()">
             <select id="templateSelect" onchange="updatePostcard()"></select>
         </div>
 
+        
         <div class="postcard-preview" id="postcardPreview">
             <img id="postcardImage" src="images/mtcard1.jpg" alt="Postcard Preview" crossorigin="anonymous">
             <div id="postcardName" class="name">أدخل اسمك</div>

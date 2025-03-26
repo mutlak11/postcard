@@ -172,7 +172,8 @@
                 const fontSize = parseFloat(computedStyle.fontSize);
                 
                 // Set font properties with exact size
-                ctx.font = `${fontSize * ratio}px Arial`; // Key fix here
+               
+                ctx.font = `${fontSize * ratio}px Arial`;  // Multiply by device ratio
                 ctx.fillStyle = computedStyle.color;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
@@ -184,13 +185,16 @@
                 const xPosition = (textRect.left - previewRect.left) + textRect.width/2;
                 const yPosition = (textRect.top - previewRect.top);
 
-                // Draw text
-                ctx.fillText(
-                    textElement.innerText,
-                    xPosition,
-                    yPosition
-                );
+ 
+            const previewRect = preview.getBoundingClientRect();
+           const textRect = textElement.getBoundingClientRect();
 
+            ctx.fillText(
+                textElement.innerText,
+                (textRect.left - previewRect.left) + textRect.width/2,  // X
+                (textRect.top - previewRect.top)                        // Y
+            );
+                
                 // Trigger download
                 const link = document.createElement('a');
                 link.download = `postcard-${Date.now()}.png`;
@@ -199,7 +203,37 @@
             };
         }
   
-        
+ // TOUCH EVENTS
+textElement.addEventListener("touchstart", handleDragStart);
+textElement.addEventListener("touchmove", handleDragMove);
+textElement.addEventListener("touchend", handleDragEnd);
+
+// MOUSE EVENTS
+textElement.addEventListener("mousedown", handleDragStart);
+document.addEventListener("mousemove", handleDragMove);
+document.addEventListener("mouseup", handleDragEnd);
+
+// Unified handlers
+function handleDragStart(e) {
+    isDragging = true;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    startX = clientX - offsetX;
+    startY = clientY - offsetY;
+}
+
+function handleDragMove(e) {
+    if (!isDragging) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    offsetX = clientX - startX;
+    offsetY = clientY - startY;
+    textElement.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+}
+
+function handleDragEnd() {
+    isDragging = false;
+}       
         
   
         // Drag functionality
@@ -223,6 +257,13 @@
             textElement.style.cursor = "grab";
         });
 
+@media (max-width: 768px) {
+    .postcard-preview .name {
+        font-size: 6vw;     /* Responsive font size */
+        bottom: 5vh;        /* Responsive position */
+    }
+}
+        
         // Initial setup
         updatePostcard();
     </script>
